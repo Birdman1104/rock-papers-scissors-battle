@@ -3,9 +3,11 @@ export const GAME_CONFIG = {
     height: 1500,
     itemsCount: 25,
     itemSize: 25,
-    rocksPosition: { x: 100, y: 100 },
-    papersPosition: { x: 1400, y: 100 },
-    scissorsPosition: { x: 750, y: 1400 },
+    positions: {
+        rock: { x: 100, y: 100 },
+        paper: { x: 1400, y: 100 },
+        scissors: { x: 750, y: 1400 },
+    },
 };
 
 export const getBodyConfig = (name: string) => {

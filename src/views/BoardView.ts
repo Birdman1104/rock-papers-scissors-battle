@@ -2,7 +2,8 @@ import { lego } from '@armathai/lego';
 import Matter from 'matter-js';
 import { Container, IPointData, Rectangle, Texture } from 'pixi.js';
 import { GAME_CONFIG, getBodyConfig, winningCombos } from '../configs/constants';
-import { BoardModelEvents, GameModelEvents } from '../events/ModelEvents';
+import { MainGameEvents } from '../events/MainEvents';
+import { BoardModelEvents, GameModelEvents, ItemModelEvents } from '../events/ModelEvents';
 import { GameState } from '../models/GameModel';
 import { ItemModel, ItemType } from '../models/ItemModel';
 import { delayRunnable } from '../Utils';
@@ -15,10 +16,9 @@ export class BoardView extends Container {
         super();
 
         lego.event
+            .on(ItemModelEvents.TypeUpdate, this.onItemTypeUpdate, this)
             .on(GameModelEvents.StateUpdate, this.onGameStateUpdate, this)
-            .on(BoardModelEvents.RocksUpdate, this.onRocksUpdate, this)
-            .on(BoardModelEvents.ScissorsUpdate, this.onScissorsUpdate, this)
-            .on(BoardModelEvents.PapersUpdate, this.onPapersUpdate, this);
+            .on(BoardModelEvents.ItemsUpdate, this.onItemsUpdate, this);
         this.build();
     }
 
@@ -58,8 +58,6 @@ export class BoardView extends Container {
         Matter.Events.on(window.gamePhysicsEngine, 'collisionStart', (event) => {
             for (const pair of event.pairs) {
                 const { bodyA, bodyB } = pair;
-                console.log(bodyA.label, bodyB.label);
-
                 for (const [winner, { beats, texture }] of Object.entries(winningCombos)) {
                     if (
                         (bodyA.label === beats && bodyB.label === winner) ||
@@ -68,7 +66,10 @@ export class BoardView extends Container {
                         const loserBody = bodyA.label === beats ? bodyA : bodyB;
                         const loserSprite = this.bodyToSprite.get(loserBody);
                         loserBody.label = winner;
-                        loserSprite && (loserSprite.sprite.texture = Texture.from(texture));
+                        if (loserSprite) {
+                            loserSprite.sprite.texture = Texture.from(texture);
+                            lego.event.emit(MainGameEvents.Collision, loserSprite.uuid, winner);
+                        }
                         break;
                     }
                 }
@@ -100,19 +101,10 @@ export class BoardView extends Container {
         }
     }
 
-    private onRocksUpdate(items: ItemModel[]): void {
-        const { rocksPosition: pos } = GAME_CONFIG;
-        items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
-    }
-
-    private onScissorsUpdate(items: ItemModel[]): void {
-        const { scissorsPosition: pos } = GAME_CONFIG;
-        items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
-    }
-
-    private onPapersUpdate(items: ItemModel[]): void {
-        const { papersPosition: pos } = GAME_CONFIG;
-        items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
+    private onItemsUpdate(items: ItemModel[]): void {
+        items.forEach(({ uuid, type }) => {
+            this.addNewItem(type, GAME_CONFIG.positions[type], uuid);
+        });
     }
 
     private addNewItem(type: ItemType, pos: IPointData, uuid: string): void {
@@ -126,5 +118,15 @@ export class BoardView extends Container {
         item.rotation = body.angle;
         this.bodyToSprite.set(body, item);
         Matter.World.add(window.gamePhysicsWorld, body);
+    }
+
+    private onItemTypeUpdate(newType: ItemType, oldType: ItemType, uuid: string) {
+        // console.log(oldType, '->', newType);
+        // const item = this.items.find((item) => item.uuid === uuid);
+        // if (item) {
+        //     loserBody.label = newType;
+        //     item.sprite.texture = Texture.from(newType + '.png');
+        //     // loserSprite && (loserSprite.sprite.texture = Texture.from(texture));
+        // }
     }
 }

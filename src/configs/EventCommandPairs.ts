@@ -1,8 +1,9 @@
 import { lego } from '@armathai/lego';
 import { MainGameEvents, UIViewEvents } from '../events/MainEvents';
-import { GameModelEvents } from '../events/ModelEvents';
+import { GameModelEvents, ItemModelEvents } from '../events/ModelEvents';
 import { GameState } from '../models/GameModel';
 import Head from '../models/HeadModel';
+import { ItemType } from '../models/ItemModel';
 
 export const mapCommands = () => {
     eventCommandPairs.forEach(({ event, command }) => {
@@ -30,7 +31,7 @@ const gameStateUpdateCommand = (state: GameState) => {
         case GameState.Intro:
             break;
         case GameState.Game:
-            Head.gameModel.initElements();
+            Head.gameModel.initItems();
             break;
         case GameState.Result:
             break;
@@ -38,6 +39,14 @@ const gameStateUpdateCommand = (state: GameState) => {
         default:
             break;
     }
+};
+
+const onCollisionCommand = (uuid: string, turnInto: ItemType) => {
+    Head.gameModel?.board?.updateItem(uuid, turnInto);
+};
+
+const onItemTypeUpdate = () => {
+    Head.gameModel?.board?.onTypeUpdate();
 };
 
 const eventCommandPairs = Object.freeze([
@@ -52,5 +61,13 @@ const eventCommandPairs = Object.freeze([
     {
         event: GameModelEvents.StateUpdate,
         command: gameStateUpdateCommand,
+    },
+    {
+        event: MainGameEvents.Collision,
+        command: onCollisionCommand,
+    },
+    {
+        event: ItemModelEvents.TypeUpdate,
+        command: onItemTypeUpdate,
     },
 ]);

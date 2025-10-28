@@ -44,7 +44,7 @@ export class GameModel extends ObservableModel {
         this._board = new BoardModel();
     }
 
-    public initElements(): void {
-        this._board?.initElements();
+    public initItems(): void {
+        this._board?.initItems();
     }
 }

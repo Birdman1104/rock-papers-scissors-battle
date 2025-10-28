@@ -1,11 +1,13 @@
 import { GAME_CONFIG } from '../configs/constants';
-import { ItemModel } from './ItemModel';
+import { ItemModel, ItemType } from './ItemModel';
 import { ObservableModel } from './ObservableModel';
 
 export class BoardModel extends ObservableModel {
-    private _rocks: ItemModel[] = [];
-    private _papers: ItemModel[] = [];
-    private _scissors: ItemModel[] = [];
+    private _items: ItemModel[] = [];
+
+    private _rocksCounter = 0;
+    private _papersCounter = 0;
+    private _scissorsCounter = 0;
 
     constructor() {
         super('BoardModel');
@@ -14,39 +16,58 @@ export class BoardModel extends ObservableModel {
     }
 
     public get rocks(): ItemModel[] {
-        return this._rocks;
+        return this._items.filter((el) => el.type === 'rock');
     }
 
     public get papers(): ItemModel[] {
-        return this._papers;
+        return this._items.filter((el) => el.type === 'paper');
     }
 
     public get scissors(): ItemModel[] {
-        return this._scissors;
+        return this._items.filter((el) => el.type === 'scissors');
     }
 
-    public set rocks(value: ItemModel[]) {
-        this._rocks = value;
+    public get items(): ItemModel[] {
+        return this._items;
     }
 
-    public set papers(value: ItemModel[]) {
-        this._papers = value;
+    public set items(value: ItemModel[]) {
+        this.items = value;
     }
 
-    public set scissors(value: ItemModel[]) {
-        this._scissors = value;
+    public getItemByUuid(uuid: string): ItemModel | undefined {
+        return this._items.find((el) => el.uuid === uuid);
     }
 
-    public init(): void {}
+    public init(): void {
+        //
+    }
 
-    public initElements(): void {
-        this._rocks.forEach((r) => r.destroy());
-        this._papers.forEach((r) => r.destroy());
-        this._scissors.forEach((r) => r.destroy());
-
+    public initItems(): void {
+        this._items.forEach((r) => r.destroy());
+        const tempArr: ItemModel[] = [];
+        const types: ItemType[] = ['rock', 'paper', 'scissors'];
         const { itemsCount } = GAME_CONFIG;
-        this._rocks = new Array(itemsCount).fill(new ItemModel('rock'));
-        this._papers = new Array(itemsCount).fill(new ItemModel('paper'));
-        this._scissors = new Array(itemsCount).fill(new ItemModel('scissors'));
+        types.forEach((type) => {
+            for (let i = 0; i < itemsCount; i++) {
+                tempArr.push(new ItemModel(type));
+            }
+        });
+
+        this._items = [...tempArr];
+    }
+
+    public updateItem(uuid: string, turnInto: ItemType): void {
+        const item = this.getItemByUuid(uuid);
+        if (item) {
+            item.type = turnInto;
+        }
+    }
+
+    public onTypeUpdate(): void {
+        console.clear();
+        console.log(`rocks - ${this.rocks.length}`);
+        console.log(`papers - ${this.papers.length}`);
+        console.log(`scissors - ${this.scissors.length}`);
     }
 }
