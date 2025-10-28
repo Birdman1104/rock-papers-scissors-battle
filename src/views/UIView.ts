@@ -5,9 +5,11 @@ import { getUIGridConfig } from '../configs/gridConfigs/UIViewGC';
 import { UIViewEvents } from '../events/MainEvents';
 import { GameModelEvents } from '../events/ModelEvents';
 import { GameState } from '../models/GameModel';
+import { Counters } from './CountersView';
 
 export class UIView extends PixiGrid {
     private startButton!: Sprite;
+    private counter!: Counters;
 
     constructor() {
         super();
@@ -31,12 +33,26 @@ export class UIView extends PixiGrid {
             lego.event.emit(UIViewEvents.StartButtonClick);
         });
         this.setChild('start', this.startButton);
+
+        this.counter = new Counters();
+        this.setChild('score', this.counter);
     }
 
     private onGameStateUpdate(state: GameState): void {
-        console.warn(GameState[state]);
+        switch (state) {
+            case GameState.Intro:
+                this.counter.visible = false;
+                this.startButton.visible = true;
+                this.startButton.eventMode = 'static';
+                break;
+            case GameState.Game:
+                this.counter.visible = true;
+                this.startButton.visible = false;
+                this.startButton.eventMode = 'none';
 
-        this.startButton.visible = state === GameState.Intro;
-        this.startButton.eventMode = state === GameState.Intro ? 'static' : 'none';
+                break;
+            default:
+                break;
+        }
     }
 }

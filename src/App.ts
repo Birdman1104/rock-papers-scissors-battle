@@ -35,7 +35,7 @@ class App extends Application {
         document.body.appendChild(this.view);
 
         if (process.env.NODE_ENV !== 'production') {
-            this.initStats();
+            // this.initStats();
             this.initLego();
         }
         await this.loadAssets();

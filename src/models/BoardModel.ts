@@ -35,6 +35,30 @@ export class BoardModel extends ObservableModel {
         this.items = value;
     }
 
+    public get rocksCounter(): number {
+        return this._rocksCounter;
+    }
+
+    public get papersCounter(): number {
+        return this._papersCounter;
+    }
+
+    public get scissorsCounter(): number {
+        return this._scissorsCounter;
+    }
+
+    public set rocksCounter(value: number) {
+        this._rocksCounter = value;
+    }
+
+    public set papersCounter(value: number) {
+        this._papersCounter = value;
+    }
+
+    public set scissorsCounter(value: number) {
+        this._scissorsCounter = value;
+    }
+
     public getItemByUuid(uuid: string): ItemModel | undefined {
         return this._items.find((el) => el.uuid === uuid);
     }
@@ -65,9 +89,8 @@ export class BoardModel extends ObservableModel {
     }
 
     public onTypeUpdate(): void {
-        console.clear();
-        console.log(`rocks - ${this.rocks.length}`);
-        console.log(`papers - ${this.papers.length}`);
-        console.log(`scissors - ${this.scissors.length}`);
+        this._rocksCounter = this.rocks.length;
+        this._papersCounter = this.papers.length;
+        this._scissorsCounter = this.scissors.length;
     }
 }

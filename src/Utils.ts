@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 
 export const lp = (l, p) => {
     const { clientWidth: w, clientHeight: h } = document.body;
@@ -73,4 +73,14 @@ export const drawPoint = (
     gr.endFill();
     container.addChild(gr);
     return gr;
+};
+
+export const makeText = (config: TextConfig, name?: string): Text => {
+    const { text: content, x = 0, y = 0, alpha = 1, style = {}, anchor = { x: 0.5, y: 0.5 } } = config;
+    const text = new Text(content, style);
+    text.position.set(x, y);
+    text.anchor.set(anchor.x, anchor.y);
+    text.alpha = alpha;
+    name && (text.name = name);
+    return text;
 };

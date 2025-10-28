@@ -12,11 +12,17 @@ export const GAME_CONFIG = {
 
 export const getBodyConfig = (name: string) => {
     return {
-        restitution: 1.02,
+        restitution: 1.04,
         friction: 0,
         frictionAir: 0,
         label: name,
     };
+};
+
+export const wallBodyConfig = {
+    isStatic: true,
+    restitution: 1.04,
+    friction: 0,
 };
 
 export const winningCombos = {

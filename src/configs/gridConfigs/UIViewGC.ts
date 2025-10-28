@@ -1,3 +1,4 @@
+import { CellAlign } from '@armathai/pixi-grid';
 import { lp } from '../../Utils';
 
 export const getUIGridConfig = () => {
@@ -13,7 +14,8 @@ const getUIGridLandscapeConfig = () => {
         cells: [
             {
                 name: 'score',
-                bounds: { x: 0, y: 0, width: 0.11, height: 0.11 },
+                bounds: { x: 0.01, y: 0.01, width: 0.3, height: 0.3 },
+                align: CellAlign.leftTop,
             },
             {
                 name: 'start',
@@ -32,7 +34,8 @@ const getUIGridPortraitConfig = () => {
         cells: [
             {
                 name: 'score',
-                bounds: { x: 0, y: 0, width: 0.11, height: 0.11 },
+                bounds: { x: 0.01, y: 0.01, width: 0.3, height: 0.2 },
+                align: CellAlign.leftTop,
             },
             {
                 name: 'start',

@@ -1,4 +1,9 @@
-export const BoardModelEvents = { ItemsUpdate: 'BoardModelItemsUpdate' };
+export const BoardModelEvents = {
+    ItemsUpdate: 'BoardModelItemsUpdate',
+    RocksCounterUpdate: 'BoardModelRocksCounterUpdate',
+    PapersCounterUpdate: 'BoardModelPapersCounterUpdate',
+    ScissorsCounterUpdate: 'BoardModelScissorsCounterUpdate',
+};
 
 export const GameModelEvents = { StateUpdate: 'GameModelStateUpdate', BoardUpdate: 'GameModelBoardUpdate' };
 

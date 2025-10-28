@@ -29,3 +29,12 @@ declare namespace GlobalMixins {
         click: [string];
     }
 }
+
+interface TextConfig {
+    text: string;
+    x?: number;
+    y?: number;
+    alpha?: number;
+    anchor?: { x: number; y: number };
+    style: Partial<ITextStyle>;
+}

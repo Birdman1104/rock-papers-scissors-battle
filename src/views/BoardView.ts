@@ -1,7 +1,7 @@
 import { lego } from '@armathai/lego';
 import Matter from 'matter-js';
 import { Container, IPointData, Rectangle, Texture } from 'pixi.js';
-import { GAME_CONFIG, getBodyConfig, winningCombos } from '../configs/constants';
+import { GAME_CONFIG, getBodyConfig, wallBodyConfig, winningCombos } from '../configs/constants';
 import { MainGameEvents } from '../events/MainEvents';
 import { BoardModelEvents, GameModelEvents, ItemModelEvents } from '../events/ModelEvents';
 import { GameState } from '../models/GameModel';
@@ -28,18 +28,13 @@ export class BoardView extends Container {
 
     private initWalls(): void {
         const thickness = 100;
-        const wallOptions = {
-            isStatic: true,
-            restitution: 1.02,
-            friction: 0,
-        };
 
         const { width: w, height: h } = GAME_CONFIG;
         const walls = [
-            Matter.Bodies.rectangle(w / 2, -thickness / 2, w, thickness, wallOptions),
-            Matter.Bodies.rectangle(w / 2, h + thickness / 2, w, thickness, wallOptions),
-            Matter.Bodies.rectangle(-thickness / 2, h / 2, thickness, h, wallOptions),
-            Matter.Bodies.rectangle(w + thickness / 2, h / 2, thickness, h, wallOptions),
+            Matter.Bodies.rectangle(w / 2, -thickness / 2, w, thickness, wallBodyConfig),
+            Matter.Bodies.rectangle(w / 2, h + thickness / 2, w, thickness, wallBodyConfig),
+            Matter.Bodies.rectangle(-thickness / 2, h / 2, thickness, h, wallBodyConfig),
+            Matter.Bodies.rectangle(w + thickness / 2, h / 2, thickness, h, wallBodyConfig),
         ];
         Matter.World.add(window.gamePhysicsWorld, walls);
     }
