@@ -15,6 +15,10 @@ const getUIGridLandscapeConfig = () => {
                 name: 'score',
                 bounds: { x: 0, y: 0, width: 0.11, height: 0.11 },
             },
+            {
+                name: 'start',
+                bounds: { x: 0.3, y: 0.7, width: 0.4, height: 0.2 },
+            },
         ],
     };
 };
@@ -29,6 +33,10 @@ const getUIGridPortraitConfig = () => {
             {
                 name: 'score',
                 bounds: { x: 0, y: 0, width: 0.11, height: 0.11 },
+            },
+            {
+                name: 'start',
+                bounds: { x: 0, y: 0.75, width: 1, height: 0.15 },
             },
         ],
     };

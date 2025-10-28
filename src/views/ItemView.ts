@@ -1,11 +1,10 @@
 import { Container, Sprite } from 'pixi.js';
+import { ItemType } from '../models/ItemModel';
 
-export type ItemType = 'rock' | 'paper' | 'scissors';
-
-export class Item extends Container {
+export class ItemView extends Container {
     private _sprite!: Sprite;
 
-    constructor(private _type: ItemType) {
+    constructor(private _type: ItemType, private _uuid: string) {
         super();
 
         this._sprite = Sprite.from(this.type + '.png');
@@ -20,5 +19,9 @@ export class Item extends Container {
 
     get sprite(): Sprite {
         return this._sprite;
+    }
+
+    get uuid(): string {
+        return this._uuid;
     }
 }

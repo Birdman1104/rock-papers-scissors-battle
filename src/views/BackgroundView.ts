@@ -1,5 +1,4 @@
 import { ICellConfig, PixiGrid } from '@armathai/pixi-grid';
-import { Sprite } from 'pixi.js';
 import { getBackgroundGridConfig } from '../configs/gridConfigs/BackgroundViewGC';
 
 export class BackgroundView extends PixiGrid {
@@ -17,7 +16,7 @@ export class BackgroundView extends PixiGrid {
     }
 
     private build(): void {
-        const bkg = Sprite.from('bkg.jpg');
-        this.setChild('background', bkg);
+        // const bkg = Sprite.from('bkg.jpg');
+        // this.setChild('background', bkg);
     }
 }

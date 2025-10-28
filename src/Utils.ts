@@ -58,3 +58,19 @@ export const drawBounds = (gameObject: Container, color = 0xffffff * Math.random
     gameObject.addChild(gr);
     return gr;
 };
+
+export const drawPoint = (
+    container: any,
+    x: number,
+    y: number,
+    radius = 5,
+    color = 0xffffff * Math.random(),
+    alpha = 0.5,
+): Graphics => {
+    const gr = new Graphics();
+    gr.beginFill(color, alpha);
+    gr.drawCircle(x, y, radius);
+    gr.endFill();
+    container.addChild(gr);
+    return gr;
+};
