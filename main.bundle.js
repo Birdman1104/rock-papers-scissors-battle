@@ -45459,6 +45459,15 @@ const drawPoint = (container, x, y, radius = 5, color = 0xffffff * Math.random()
     container.addChild(gr);
     return gr;
 };
+const makeText = (config, name) => {
+    const { text: content, x = 0, y = 0, alpha = 1, style = {}, anchor = { x: 0.5, y: 0.5 } } = config;
+    const text = new Text(content, style);
+    text.position.set(x, y);
+    text.anchor.set(anchor.x, anchor.y);
+    text.alpha = alpha;
+    name && (text.name = name);
+    return text;
+};
 
 ;// CONCATENATED MODULE: ./src/configs/gridConfigs/BackgroundViewGC.ts
 
@@ -45606,9 +45615,10 @@ const getGameViewGridPortraitConfig = () => {
 
 ;// CONCATENATED MODULE: ./src/events/ModelEvents.ts
 const BoardModelEvents = {
-    RocksUpdate: 'BoardModelRocksUpdate',
-    PapersUpdate: 'BoardModelPapersUpdate',
-    ScissorsUpdate: 'BoardModelScissorsUpdate',
+    ItemsUpdate: 'BoardModelItemsUpdate',
+    RocksCounterUpdate: 'BoardModelRocksCounterUpdate',
+    PapersCounterUpdate: 'BoardModelPapersCounterUpdate',
+    ScissorsCounterUpdate: 'BoardModelScissorsCounterUpdate',
 };
 const GameModelEvents = { StateUpdate: 'GameModelStateUpdate', BoardUpdate: 'GameModelBoardUpdate' };
 const HeadModelEvents = { GameModelUpdate: 'HeadModelGameModelUpdate' };
@@ -45620,22 +45630,43 @@ const GAME_CONFIG = {
     height: 1500,
     itemsCount: 25,
     itemSize: 25,
-    rocksPosition: { x: 100, y: 100 },
-    papersPosition: { x: 1400, y: 100 },
-    scissorsPosition: { x: 750, y: 1400 },
+    positions: {
+        rock: { x: 100, y: 100 },
+        paper: { x: 1400, y: 100 },
+        scissors: { x: 750, y: 1400 },
+    },
 };
 const getBodyConfig = (name) => {
     return {
-        restitution: 1.02,
+        restitution: 1.04,
         friction: 0,
         frictionAir: 0,
         label: name,
     };
 };
+const wallBodyConfig = {
+    isStatic: true,
+    restitution: 1.04,
+    friction: 0,
+};
 const winningCombos = {
     paper: { beats: 'rock', texture: 'paper.png' },
     rock: { beats: 'scissors', texture: 'rock.png' },
     scissors: { beats: 'paper', texture: 'scissors.png' },
+};
+
+;// CONCATENATED MODULE: ./src/events/MainEvents.ts
+const WindowEvent = {
+    Resize: 'WindowEventResize',
+    FocusChange: 'WindowEventFocusChange',
+};
+const MainGameEvents = {
+    Resize: 'MainGameEventsResize',
+    MainViewReady: 'MainGameEventsMainViewReady',
+    Collision: 'MainGameEventsCollision',
+};
+const UIViewEvents = {
+    StartButtonClick: 'UIViewEventsStartButtonClick',
 };
 
 ;// CONCATENATED MODULE: ./src/models/ObservableModel.ts
@@ -45692,38 +45723,73 @@ class ItemModel extends ObservableModel {
 class BoardModel extends ObservableModel {
     constructor() {
         super('BoardModel');
-        this._rocks = [];
-        this._papers = [];
-        this._scissors = [];
+        this._items = [];
+        this._rocksCounter = 0;
+        this._papersCounter = 0;
+        this._scissorsCounter = 0;
         this.makeObservable();
     }
     get rocks() {
-        return this._rocks;
+        return this._items.filter((el) => el.type === 'rock');
     }
     get papers() {
-        return this._papers;
+        return this._items.filter((el) => el.type === 'paper');
     }
     get scissors() {
-        return this._scissors;
+        return this._items.filter((el) => el.type === 'scissors');
     }
-    set rocks(value) {
-        this._rocks = value;
+    get items() {
+        return this._items;
     }
-    set papers(value) {
-        this._papers = value;
+    set items(value) {
+        this.items = value;
     }
-    set scissors(value) {
-        this._scissors = value;
+    get rocksCounter() {
+        return this._rocksCounter;
     }
-    init() { }
-    initElements() {
-        this._rocks.forEach((r) => r.destroy());
-        this._papers.forEach((r) => r.destroy());
-        this._scissors.forEach((r) => r.destroy());
+    get papersCounter() {
+        return this._papersCounter;
+    }
+    get scissorsCounter() {
+        return this._scissorsCounter;
+    }
+    set rocksCounter(value) {
+        this._rocksCounter = value;
+    }
+    set papersCounter(value) {
+        this._papersCounter = value;
+    }
+    set scissorsCounter(value) {
+        this._scissorsCounter = value;
+    }
+    getItemByUuid(uuid) {
+        return this._items.find((el) => el.uuid === uuid);
+    }
+    init() {
+        //
+    }
+    initItems() {
+        this._items.forEach((r) => r.destroy());
+        const tempArr = [];
+        const types = ['rock', 'paper', 'scissors'];
         const { itemsCount } = GAME_CONFIG;
-        this._rocks = new Array(itemsCount).fill(new ItemModel('rock'));
-        this._papers = new Array(itemsCount).fill(new ItemModel('paper'));
-        this._scissors = new Array(itemsCount).fill(new ItemModel('scissors'));
+        types.forEach((type) => {
+            for (let i = 0; i < itemsCount; i++) {
+                tempArr.push(new ItemModel(type));
+            }
+        });
+        this._items = [...tempArr];
+    }
+    updateItem(uuid, turnInto) {
+        const item = this.getItemByUuid(uuid);
+        if (item) {
+            item.type = turnInto;
+        }
+    }
+    onTypeUpdate() {
+        this._rocksCounter = this.rocks.length;
+        this._papersCounter = this.papers.length;
+        this._scissorsCounter = this.scissors.length;
     }
 }
 
@@ -45763,9 +45829,9 @@ class GameModel extends ObservableModel {
         this._state = GameState.Intro;
         this._board = new BoardModel();
     }
-    initElements() {
+    initItems() {
         var _a;
-        (_a = this._board) === null || _a === void 0 ? void 0 : _a.initElements();
+        (_a = this._board) === null || _a === void 0 ? void 0 : _a.initItems();
     }
 }
 
@@ -45801,16 +45867,16 @@ class ItemView extends Container {
 
 
 
+
 class BoardView extends Container {
     constructor() {
         super();
         this.items = [];
         this.bodyToSprite = new Map();
         dist_lego.event
+            .on(ItemModelEvents.TypeUpdate, this.onItemTypeUpdate, this)
             .on(GameModelEvents.StateUpdate, this.onGameStateUpdate, this)
-            .on(BoardModelEvents.RocksUpdate, this.onRocksUpdate, this)
-            .on(BoardModelEvents.ScissorsUpdate, this.onScissorsUpdate, this)
-            .on(BoardModelEvents.PapersUpdate, this.onPapersUpdate, this);
+            .on(BoardModelEvents.ItemsUpdate, this.onItemsUpdate, this);
         this.build();
     }
     getBounds() {
@@ -45818,17 +45884,12 @@ class BoardView extends Container {
     }
     initWalls() {
         const thickness = 100;
-        const wallOptions = {
-            isStatic: true,
-            restitution: 1.02,
-            friction: 0,
-        };
         const { width: w, height: h } = GAME_CONFIG;
         const walls = [
-            matter_default().Bodies.rectangle(w / 2, -thickness / 2, w, thickness, wallOptions),
-            matter_default().Bodies.rectangle(w / 2, h + thickness / 2, w, thickness, wallOptions),
-            matter_default().Bodies.rectangle(-thickness / 2, h / 2, thickness, h, wallOptions),
-            matter_default().Bodies.rectangle(w + thickness / 2, h / 2, thickness, h, wallOptions),
+            matter_default().Bodies.rectangle(w / 2, -thickness / 2, w, thickness, wallBodyConfig),
+            matter_default().Bodies.rectangle(w / 2, h + thickness / 2, w, thickness, wallBodyConfig),
+            matter_default().Bodies.rectangle(-thickness / 2, h / 2, thickness, h, wallBodyConfig),
+            matter_default().Bodies.rectangle(w + thickness / 2, h / 2, thickness, h, wallBodyConfig),
         ];
         matter_default().World.add(window.gamePhysicsWorld, walls);
     }
@@ -45844,14 +45905,16 @@ class BoardView extends Container {
         matter_default().Events.on(window.gamePhysicsEngine, 'collisionStart', (event) => {
             for (const pair of event.pairs) {
                 const { bodyA, bodyB } = pair;
-                console.log(bodyA.label, bodyB.label);
                 for (const [winner, { beats, texture }] of Object.entries(winningCombos)) {
                     if ((bodyA.label === beats && bodyB.label === winner) ||
                         (bodyB.label === beats && bodyA.label === winner)) {
                         const loserBody = bodyA.label === beats ? bodyA : bodyB;
                         const loserSprite = this.bodyToSprite.get(loserBody);
                         loserBody.label = winner;
-                        loserSprite && (loserSprite.sprite.texture = Texture.from(texture));
+                        if (loserSprite) {
+                            loserSprite.sprite.texture = Texture.from(texture);
+                            dist_lego.event.emit(MainGameEvents.Collision, loserSprite.uuid, winner);
+                        }
                         break;
                     }
                 }
@@ -45880,17 +45943,10 @@ class BoardView extends Container {
                 break;
         }
     }
-    onRocksUpdate(items) {
-        const { rocksPosition: pos } = GAME_CONFIG;
-        items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
-    }
-    onScissorsUpdate(items) {
-        const { scissorsPosition: pos } = GAME_CONFIG;
-        items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
-    }
-    onPapersUpdate(items) {
-        const { papersPosition: pos } = GAME_CONFIG;
-        items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
+    onItemsUpdate(items) {
+        items.forEach(({ uuid, type }) => {
+            this.addNewItem(type, GAME_CONFIG.positions[type], uuid);
+        });
     }
     addNewItem(type, pos, uuid) {
         const body = matter_default().Bodies.circle(pos.x, pos.y, GAME_CONFIG.itemSize, getBodyConfig(type));
@@ -45902,6 +45958,15 @@ class BoardView extends Container {
         item.rotation = body.angle;
         this.bodyToSprite.set(body, item);
         matter_default().World.add(window.gamePhysicsWorld, body);
+    }
+    onItemTypeUpdate(newType, oldType, uuid) {
+        // console.log(oldType, '->', newType);
+        // const item = this.items.find((item) => item.uuid === uuid);
+        // if (item) {
+        //     loserBody.label = newType;
+        //     item.sprite.texture = Texture.from(newType + '.png');
+        //     // loserSprite && (loserSprite.sprite.texture = Texture.from(texture));
+        // }
     }
 }
 
@@ -45934,6 +45999,7 @@ class GameView extends PixiGrid {
 
 ;// CONCATENATED MODULE: ./src/configs/gridConfigs/UIViewGC.ts
 
+
 const getUIGridConfig = () => {
     return lp(getUIGridLandscapeConfig, getUIGridPortraitConfig).call(null);
 };
@@ -45946,7 +46012,8 @@ const getUIGridLandscapeConfig = () => {
         cells: [
             {
                 name: 'score',
-                bounds: { x: 0, y: 0, width: 0.11, height: 0.11 },
+                bounds: { x: 0.01, y: 0.01, width: 0.3, height: 0.3 },
+                align: CellAlign.leftTop,
             },
             {
                 name: 'start',
@@ -45964,7 +46031,8 @@ const getUIGridPortraitConfig = () => {
         cells: [
             {
                 name: 'score',
-                bounds: { x: 0, y: 0, width: 0.11, height: 0.11 },
+                bounds: { x: 0.01, y: 0.01, width: 0.3, height: 0.2 },
+                align: CellAlign.leftTop,
             },
             {
                 name: 'start',
@@ -45974,20 +46042,57 @@ const getUIGridPortraitConfig = () => {
     };
 };
 
-;// CONCATENATED MODULE: ./src/events/MainEvents.ts
-const WindowEvent = {
-    Resize: 'WindowEventResize',
-    FocusChange: 'WindowEventFocusChange',
+;// CONCATENATED MODULE: ./src/views/CountersView.ts
+
+
+
+
+
+const getTextStyle = (y, text) => {
+    return {
+        text,
+        y,
+        x: 10,
+        anchor: { x: 0, y: 0 },
+        style: {
+            fontSize: 28,
+            fill: '#ffffff',
+            // fontFamily: 'JomhuriaRegular',
+            letterSpacing: 1,
+        },
+    };
 };
-const MainGameEvents = {
-    Resize: 'MainGameEventsResize',
-    MainViewReady: 'MainGameEventsMainViewReady',
-};
-const UIViewEvents = {
-    StartButtonClick: 'UIViewEventsStartButtonClick',
-};
+class Counters extends Container {
+    constructor() {
+        super();
+        dist_lego.event
+            .on(BoardModelEvents.RocksCounterUpdate, this.onRocksCounterUpdate, this)
+            .on(BoardModelEvents.PapersCounterUpdate, this.onPapersCounterUpdate, this)
+            .on(BoardModelEvents.ScissorsCounterUpdate, this.onScissorsCounterUpdate, this);
+        this.build();
+    }
+    getBounds(skipUpdate, rect) {
+        return new Rectangle(0, 0, 200, 100);
+    }
+    build() {
+        this.rocksText = makeText(getTextStyle(0, 'Rocks - ' + GAME_CONFIG.itemsCount));
+        this.papersText = makeText(getTextStyle(35, 'Papers - ' + GAME_CONFIG.itemsCount));
+        this.scissorsText = makeText(getTextStyle(70, 'Scissors - ' + GAME_CONFIG.itemsCount));
+        this.addChild(this.rocksText, this.papersText, this.scissorsText);
+    }
+    onRocksCounterUpdate(value) {
+        this.rocksText.text = 'Rocks - ' + value;
+    }
+    onPapersCounterUpdate(value) {
+        this.papersText.text = 'Papers - ' + value;
+    }
+    onScissorsCounterUpdate(value) {
+        this.scissorsText.text = 'Scissors - ' + value;
+    }
+}
 
 ;// CONCATENATED MODULE: ./src/views/UIView.ts
+
 
 
 
@@ -46014,11 +46119,24 @@ class UIView extends PixiGrid {
             dist_lego.event.emit(UIViewEvents.StartButtonClick);
         });
         this.setChild('start', this.startButton);
+        this.counter = new Counters();
+        this.setChild('score', this.counter);
     }
     onGameStateUpdate(state) {
-        console.warn(GameState[state]);
-        this.startButton.visible = state === GameState.Intro;
-        this.startButton.eventMode = state === GameState.Intro ? 'static' : 'none';
+        switch (state) {
+            case GameState.Intro:
+                this.counter.visible = false;
+                this.startButton.visible = true;
+                this.startButton.eventMode = 'static';
+                break;
+            case GameState.Game:
+                this.counter.visible = true;
+                this.startButton.visible = false;
+                this.startButton.eventMode = 'none';
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -46148,13 +46266,21 @@ const gameStateUpdateCommand = (state) => {
         case GameState.Intro:
             break;
         case GameState.Game:
-            models_HeadModel.gameModel.initElements();
+            models_HeadModel.gameModel.initItems();
             break;
         case GameState.Result:
             break;
         default:
             break;
     }
+};
+const onCollisionCommand = (uuid, turnInto) => {
+    var _a, _b;
+    (_b = (_a = models_HeadModel.gameModel) === null || _a === void 0 ? void 0 : _a.board) === null || _b === void 0 ? void 0 : _b.updateItem(uuid, turnInto);
+};
+const onItemTypeUpdate = () => {
+    var _a, _b;
+    (_b = (_a = models_HeadModel.gameModel) === null || _a === void 0 ? void 0 : _a.board) === null || _b === void 0 ? void 0 : _b.onTypeUpdate();
 };
 const eventCommandPairs = Object.freeze([
     {
@@ -46168,6 +46294,14 @@ const eventCommandPairs = Object.freeze([
     {
         event: GameModelEvents.StateUpdate,
         command: gameStateUpdateCommand,
+    },
+    {
+        event: MainGameEvents.Collision,
+        command: onCollisionCommand,
+    },
+    {
+        event: ItemModelEvents.TypeUpdate,
+        command: onItemTypeUpdate,
     },
 ]);
 
@@ -46290,7 +46424,7 @@ class App extends Application {
         this.renderer.resize(width, height);
     }
     initLego() {
-        legoLogger.start(dist_lego, Object.freeze({}));
+        // legoLogger.start(lego, Object.freeze({}));
         // TODO GAMEINITCOMMAND
         // lego.command.execute(onGameInitCommand);
         // lego.event.emit(MainGameEvents.Init);
