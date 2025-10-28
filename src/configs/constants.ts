@@ -8,9 +8,17 @@ export const GAME_CONFIG = {
     scissorsPosition: { x: 750, y: 1400 },
 };
 
-export const ItemBodyConfig = {
-    restitution: 1.02,
-    friction: 0,
-    frictionAir: 0,
-    label: name,
+export const getBodyConfig = (name: string) => {
+    return {
+        restitution: 1.02,
+        friction: 0,
+        frictionAir: 0,
+        label: name,
+    };
+};
+
+export const winningCombos = {
+    paper: { beats: 'rock', texture: 'paper.png' },
+    rock: { beats: 'scissors', texture: 'rock.png' },
+    scissors: { beats: 'paper', texture: 'scissors.png' },
 };

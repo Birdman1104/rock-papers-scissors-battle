@@ -37,7 +37,13 @@ export class BoardModel extends ObservableModel {
         this._scissors = value;
     }
 
-    public init(): void {
+    public init(): void {}
+
+    public initElements(): void {
+        this._rocks.forEach((r) => r.destroy());
+        this._papers.forEach((r) => r.destroy());
+        this._scissors.forEach((r) => r.destroy());
+
         const { itemsCount } = GAME_CONFIG;
         this._rocks = new Array(itemsCount).fill(new ItemModel('rock'));
         this._papers = new Array(itemsCount).fill(new ItemModel('paper'));

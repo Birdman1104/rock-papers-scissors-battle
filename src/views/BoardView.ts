@@ -1,9 +1,11 @@
 import { lego } from '@armathai/lego';
 import Matter from 'matter-js';
-import { Container, IPointData, Rectangle } from 'pixi.js';
-import { GAME_CONFIG, ItemBodyConfig } from '../configs/constants';
-import { BoardModelEvents } from '../events/ModelEvents';
+import { Container, IPointData, Rectangle, Texture } from 'pixi.js';
+import { GAME_CONFIG, getBodyConfig, winningCombos } from '../configs/constants';
+import { BoardModelEvents, GameModelEvents } from '../events/ModelEvents';
+import { GameState } from '../models/GameModel';
 import { ItemModel, ItemType } from '../models/ItemModel';
+import { delayRunnable } from '../Utils';
 import { ItemView } from './ItemView';
 
 export class BoardView extends Container {
@@ -13,6 +15,7 @@ export class BoardView extends Container {
         super();
 
         lego.event
+            .on(GameModelEvents.StateUpdate, this.onGameStateUpdate, this)
             .on(BoardModelEvents.RocksUpdate, this.onRocksUpdate, this)
             .on(BoardModelEvents.ScissorsUpdate, this.onScissorsUpdate, this)
             .on(BoardModelEvents.PapersUpdate, this.onPapersUpdate, this);
@@ -44,82 +47,76 @@ export class BoardView extends Container {
     private build(): void {
         this.initWalls();
 
-        // for (let i = 0; i < 30; i++) {
-        //     const name = i % 3 === 0 ? 'rock' : i % 3 === 1 ? 'paper' : 'scissors';
-        //     const size = 25;
-        //     const x = Math.random() * (WIDTH - 100) + 50;
-        //     const y = Math.random() * (HEIGHT - 100) + 50;
+        window.game.ticker.add(() => {
+            for (const [body, sprite] of this.bodyToSprite) {
+                sprite.x = body.position.x;
+                sprite.y = body.position.y;
+                sprite.rotation = body.angle;
+            }
+        });
 
-        //     const body = Matter.Bodies.circle(x, y, size, {
-        //         restitution: 1.02,
-        //         friction: 0,
-        //         frictionAir: 0,
-        //         label: name,
-        //     });
+        Matter.Events.on(window.gamePhysicsEngine, 'collisionStart', (event) => {
+            for (const pair of event.pairs) {
+                const { bodyA, bodyB } = pair;
+                console.log(bodyA.label, bodyB.label);
 
-        //     Matter.Body.setVelocity(body, {
-        //         x: (Math.random() - 0.5) * 10,
-        //         y: (Math.random() - 0.5) * 10,
-        //     });
+                for (const [winner, { beats, texture }] of Object.entries(winningCombos)) {
+                    if (
+                        (bodyA.label === beats && bodyB.label === winner) ||
+                        (bodyB.label === beats && bodyA.label === winner)
+                    ) {
+                        const loserBody = bodyA.label === beats ? bodyA : bodyB;
+                        const loserSprite = this.bodyToSprite.get(loserBody);
+                        loserBody.label = winner;
+                        loserSprite && (loserSprite.sprite.texture = Texture.from(texture));
+                        break;
+                    }
+                }
+            }
+        });
+    }
 
-        //     const item = new ItemView(name, '');
-        //     this.addChild(item);
+    private onGameStateUpdate(state: GameState): void {
+        switch (state) {
+            case GameState.Intro:
+                break;
+            case GameState.Game:
+                let i = 0;
+                for (const [body, sprite] of this.bodyToSprite) {
+                    delayRunnable((i % GAME_CONFIG.itemsCount) * 0.005, () => {
+                        Matter.Body.setVelocity(body, {
+                            x: (Math.random() - 0.5) * 10,
+                            y: (Math.random() - 0.5) * 10,
+                        });
+                    });
+                    i++;
+                }
+                break;
+            case GameState.Result:
+                break;
 
-        //     bodyToSprite.set(body, item);
-        //     Matter.World.add(window.gamePhysicsWorld, body);
-        // }
-
-        // window.game.ticker.add(() => {
-        //     for (const [body, sprite] of bodyToSprite) {
-        //         sprite.x = body.position.x;
-        //         sprite.y = body.position.y;
-        //         sprite.rotation = body.angle;
-        //     }
-        // });
-
-        // const winningCombos = {
-        //     paper: { beats: 'rock', texture: 'paper.png' },
-        //     rock: { beats: 'scissors', texture: 'rock.png' },
-        //     scissors: { beats: 'paper', texture: 'scissors.png' },
-        // };
-
-        // Matter.Events.on(window.gamePhysicsEngine, 'collisionStart', (event) => {
-        //     for (const pair of event.pairs) {
-        //         const { bodyA, bodyB } = pair;
-
-        //         for (const [winner, { beats, texture }] of Object.entries(winningCombos)) {
-        //             if (
-        //                 (bodyA.label === beats && bodyB.label === winner) ||
-        //                 (bodyB.label === beats && bodyA.label === winner)
-        //             ) {
-        //                 const loserBody = bodyA.label === beats ? bodyA : bodyB;
-        //                 const loserSprite = bodyToSprite.get(loserBody);
-        //                 loserBody.label = winner;
-        //                 loserSprite.sprite.texture = Texture.from(texture);
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // });
+            default:
+                break;
+        }
     }
 
     private onRocksUpdate(items: ItemModel[]): void {
-        const { rocksPosition: pos, itemSize } = GAME_CONFIG;
+        const { rocksPosition: pos } = GAME_CONFIG;
         items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
     }
 
     private onScissorsUpdate(items: ItemModel[]): void {
-        const { scissorsPosition: pos, itemSize } = GAME_CONFIG;
+        const { scissorsPosition: pos } = GAME_CONFIG;
         items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
     }
 
     private onPapersUpdate(items: ItemModel[]): void {
-        const { papersPosition: pos, itemSize } = GAME_CONFIG;
+        const { papersPosition: pos } = GAME_CONFIG;
         items.forEach(({ uuid, type }) => this.addNewItem(type, pos, uuid));
     }
 
     private addNewItem(type: ItemType, pos: IPointData, uuid: string): void {
-        const body = Matter.Bodies.circle(pos.x, pos.y, GAME_CONFIG.itemSize, ItemBodyConfig);
+        const body = Matter.Bodies.circle(pos.x, pos.y, GAME_CONFIG.itemSize, getBodyConfig(type));
         const item = new ItemView(type, uuid);
         this.addChild(item);
         this.items.push(item);

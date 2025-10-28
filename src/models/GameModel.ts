@@ -10,7 +10,7 @@ export enum GameState {
 
 export class GameModel extends ObservableModel {
     private _state: GameState;
-    private _board: BoardModel;
+    private _board: BoardModel | null = null;
 
     constructor() {
         super('GameModel');
@@ -27,7 +27,7 @@ export class GameModel extends ObservableModel {
         this._state = value;
     }
 
-    get board(): BoardModel {
+    get board(): BoardModel | null {
         return this._board;
     }
 
@@ -35,9 +35,16 @@ export class GameModel extends ObservableModel {
         this._board = value;
     }
 
+    public setState(state: GameState): void {
+        this.state = state;
+    }
+
     public init(): void {
-        this._state = GameState.Unknown;
+        this._state = GameState.Intro;
         this._board = new BoardModel();
-        this._board.init();
+    }
+
+    public initElements(): void {
+        this._board?.initElements();
     }
 }
