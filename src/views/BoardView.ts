@@ -23,10 +23,9 @@ export class BoardView extends Container {
             .on(ItemModelEvents.TypeUpdate, this.onItemTypeUpdate, this)
             .on(GameModelEvents.StateUpdate, this.onGameStateUpdate, this)
             .on(BoardModelEvents.ItemsUpdate, this.onItemsUpdate, this);
-        this.build();
-
         this.boundsGr = drawBounds(this, 0x5832a8);
         hide(this.boundsGr, true);
+        this.build();
     }
 
     public getBounds(): Rectangle {
