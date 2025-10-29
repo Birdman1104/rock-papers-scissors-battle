@@ -1,4 +1,5 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { animate } from 'animejs';
+import { Container, DisplayObject, Graphics, Text } from 'pixi.js';
 
 export const lp = (l, p) => {
     const { clientWidth: w, clientHeight: h } = document.body;
@@ -83,4 +84,29 @@ export const makeText = (config: TextConfig, name?: string): Text => {
     text.alpha = alpha;
     name && (text.name = name);
     return text;
+};
+
+export const show = (gameObject: DisplayObject, force = false, delay = 0): void => {
+    if (force) {
+        gameObject.alpha = 1;
+    } else {
+        animate(gameObject, {
+            alpha: 1,
+            ease: 'inOutSine',
+            duration: 300,
+            delay,
+        });
+    }
+};
+
+export const hide = (gameObject: DisplayObject, force = false): void => {
+    if (force) {
+        gameObject.alpha = 0;
+    } else {
+        animate(gameObject, {
+            alpha: 0,
+            ease: 'inOutSine',
+            duration: 300,
+        });
+    }
 };

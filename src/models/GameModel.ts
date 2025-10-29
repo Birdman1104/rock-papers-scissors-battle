@@ -1,4 +1,5 @@
 import { BoardModel } from './BoardModel';
+import { ItemType } from './ItemModel';
 import { ObservableModel } from './ObservableModel';
 
 export enum GameState {
@@ -11,6 +12,7 @@ export enum GameState {
 export class GameModel extends ObservableModel {
     private _state: GameState;
     private _board: BoardModel | null = null;
+    private _winner: ItemType | undefined = undefined;
 
     constructor() {
         super('GameModel');
@@ -35,8 +37,20 @@ export class GameModel extends ObservableModel {
         this._board = value;
     }
 
+    get winner(): ItemType | undefined {
+        return this._winner;
+    }
+
+    set winner(value: ItemType) {
+        this._winner = value;
+    }
+
     public setState(state: GameState): void {
         this.state = state;
+    }
+
+    public setWinner(winner: ItemType | undefined): void {
+        this._winner = winner;
     }
 
     public init(): void {
@@ -46,5 +60,9 @@ export class GameModel extends ObservableModel {
 
     public initItems(): void {
         this._board?.initItems();
+    }
+
+    public restart() {
+        this.setState(GameState.Intro);
     }
 }

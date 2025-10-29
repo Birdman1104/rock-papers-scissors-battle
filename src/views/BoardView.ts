@@ -12,6 +12,8 @@ import { ItemView } from './ItemView';
 export class BoardView extends Container {
     private items: ItemView[] = [];
     private bodyToSprite: Map<any, ItemView> = new Map();
+    private gameState: GameState = GameState.Unknown;
+
     constructor() {
         super();
 
@@ -39,16 +41,21 @@ export class BoardView extends Container {
         Matter.World.add(window.gamePhysicsWorld, walls);
     }
 
+    private updateBodies(): void {
+        if (this.gameState !== GameState.Game) {
+            return;
+        }
+        for (const [body, sprite] of this.bodyToSprite) {
+            sprite.x = body.position.x;
+            sprite.y = body.position.y;
+            sprite.rotation = body.angle;
+        }
+    }
+
     private build(): void {
         this.initWalls();
 
-        window.game.ticker.add(() => {
-            for (const [body, sprite] of this.bodyToSprite) {
-                sprite.x = body.position.x;
-                sprite.y = body.position.y;
-                sprite.rotation = body.angle;
-            }
-        });
+        window.game.ticker.add(this.updateBodies, this);
 
         Matter.Events.on(window.gamePhysicsEngine, 'collisionStart', (event) => {
             for (const pair of event.pairs) {
@@ -73,8 +80,15 @@ export class BoardView extends Container {
     }
 
     private onGameStateUpdate(state: GameState): void {
+        this.gameState = state;
         switch (state) {
             case GameState.Intro:
+                for (const [body, sprite] of this.bodyToSprite) {
+                    sprite.destroy();
+                    Matter.Composite.remove(window.gamePhysicsWorld, body);
+                }
+                this.bodyToSprite.clear();
+
                 break;
             case GameState.Game:
                 let i = 0;

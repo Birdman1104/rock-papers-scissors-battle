@@ -11,4 +11,5 @@ export const MainGameEvents = {
 
 export const UIViewEvents = {
     StartButtonClick: 'UIViewEventsStartButtonClick',
+    RestartButtonClick: 'UIViewEventsRestartButtonClick',
 };

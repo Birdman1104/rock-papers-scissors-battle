@@ -5,7 +5,11 @@ export const BoardModelEvents = {
     ScissorsCounterUpdate: 'BoardModelScissorsCounterUpdate',
 };
 
-export const GameModelEvents = { StateUpdate: 'GameModelStateUpdate', BoardUpdate: 'GameModelBoardUpdate' };
+export const GameModelEvents = {
+    StateUpdate: 'GameModelStateUpdate',
+    BoardUpdate: 'GameModelBoardUpdate',
+    WinnerUpdate: 'GameModelWinnerUpdate',
+};
 
 export const HeadModelEvents = { GameModelUpdate: 'HeadModelGameModelUpdate' };
 

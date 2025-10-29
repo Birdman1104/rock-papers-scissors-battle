@@ -1,9 +1,10 @@
 import { lego } from '@armathai/lego';
 import { MainGameEvents, UIViewEvents } from '../events/MainEvents';
-import { GameModelEvents, ItemModelEvents } from '../events/ModelEvents';
+import { BoardModelEvents, GameModelEvents, ItemModelEvents } from '../events/ModelEvents';
 import { GameState } from '../models/GameModel';
 import Head from '../models/HeadModel';
 import { ItemType } from '../models/ItemModel';
+import { GAME_CONFIG } from './constants';
 
 export const mapCommands = () => {
     eventCommandPairs.forEach(({ event, command }) => {
@@ -26,9 +27,14 @@ const startButtonClickCommand = () => {
     Head.gameModel.setState(GameState.Game);
 };
 
+const restartButtonClickCommand = () => {
+    Head.gameModel.restart();
+};
+
 const gameStateUpdateCommand = (state: GameState) => {
     switch (state) {
         case GameState.Intro:
+            Head.gameModel?.setWinner(undefined);
             break;
         case GameState.Game:
             Head.gameModel.initItems();
@@ -49,6 +55,27 @@ const onItemTypeUpdate = () => {
     Head.gameModel?.board?.onTypeUpdate();
 };
 
+const onRockCountersUpdate = (value: number) => {
+    if (value === GAME_CONFIG.itemsCount * 3) {
+        Head.gameModel.setState(GameState.Result);
+        Head.gameModel.setWinner('rock');
+    }
+};
+
+const onPaperCountersUpdate = (value: number) => {
+    if (value === GAME_CONFIG.itemsCount * 3) {
+        Head.gameModel.setState(GameState.Result);
+        Head.gameModel.setWinner('paper');
+    }
+};
+
+const onScissorsCountersUpdate = (value: number) => {
+    if (value === GAME_CONFIG.itemsCount * 3) {
+        Head.gameModel.setState(GameState.Result);
+        Head.gameModel.setWinner('scissors');
+    }
+};
+
 const eventCommandPairs = Object.freeze([
     {
         event: MainGameEvents.MainViewReady,
@@ -57,6 +84,10 @@ const eventCommandPairs = Object.freeze([
     {
         event: UIViewEvents.StartButtonClick,
         command: startButtonClickCommand,
+    },
+    {
+        event: UIViewEvents.RestartButtonClick,
+        command: restartButtonClickCommand,
     },
     {
         event: GameModelEvents.StateUpdate,
@@ -69,5 +100,17 @@ const eventCommandPairs = Object.freeze([
     {
         event: ItemModelEvents.TypeUpdate,
         command: onItemTypeUpdate,
+    },
+    {
+        event: BoardModelEvents.RocksCounterUpdate,
+        command: onRockCountersUpdate,
+    },
+    {
+        event: BoardModelEvents.PapersCounterUpdate,
+        command: onPaperCountersUpdate,
+    },
+    {
+        event: BoardModelEvents.ScissorsCounterUpdate,
+        command: onScissorsCountersUpdate,
     },
 ]);

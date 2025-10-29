@@ -18,8 +18,12 @@ const getUIGridLandscapeConfig = () => {
                 align: CellAlign.leftTop,
             },
             {
+                name: 'popup',
+                bounds: { x: 0.1, y: 0.1, width: 0.8, height: 0.65 },
+            },
+            {
                 name: 'start',
-                bounds: { x: 0.3, y: 0.7, width: 0.4, height: 0.2 },
+                bounds: { x: 0.3, y: 0.8, width: 0.4, height: 0.15 },
             },
         ],
     };
@@ -38,8 +42,12 @@ const getUIGridPortraitConfig = () => {
                 align: CellAlign.leftTop,
             },
             {
+                name: 'popup',
+                bounds: { x: 0.1, y: 0.1, width: 0.8, height: 0.65 },
+            },
+            {
                 name: 'start',
-                bounds: { x: 0, y: 0.75, width: 1, height: 0.15 },
+                bounds: { x: 0, y: 0.8, width: 1, height: 0.15 },
             },
         ],
     };
