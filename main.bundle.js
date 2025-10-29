@@ -49091,7 +49091,7 @@ const loopRunnable = (delay, runnable, context = null, ...args) => {
 const removeRunnable = (runnable) => window.game.ticker.remove(runnable);
 const drawBounds = (gameObject, color = 0xffffff * Math.random(), alpha = 0.5) => {
     const { x, y, width, height } = gameObject.getBounds();
-    const gr = new Graphics();
+    const gr = new Graphics_Graphics();
     gr.beginFill(color, alpha);
     gr.drawRect(x, y, width, height);
     gr.endFill();
@@ -49143,7 +49143,6 @@ const hide = (gameObject, force = false) => {
 
 ;// CONCATENATED MODULE: ./src/configs/gridConfigs/BackgroundViewGC.ts
 
-
 const getBackgroundGridConfig = () => {
     return lp(getBackgroundGridLandscapeConfig, getBackgroundGridPortraitConfig).call(null);
 };
@@ -49155,9 +49154,8 @@ const getBackgroundGridLandscapeConfig = () => {
         bounds,
         cells: [
             {
-                name: 'background',
-                scale: CellScale.envelop,
-                bounds: { x: 0, y: 0, width: 1, height: 1 },
+                name: 'bkg',
+                bounds: { x: 0, y: 0, width: 1, height: 0.8 },
             },
         ],
     };
@@ -49170,116 +49168,8 @@ const getBackgroundGridPortraitConfig = () => {
         bounds,
         cells: [
             {
-                name: 'background',
-                scale: CellScale.envelop,
-                bounds: { x: 0, y: 0, width: 1, height: 1 },
-            },
-        ],
-    };
-};
-
-;// CONCATENATED MODULE: ./src/views/BackgroundView.ts
-
-
-class BackgroundView extends PixiGrid {
-    constructor() {
-        super();
-        this.build();
-    }
-    getGridConfig() {
-        return getBackgroundGridConfig();
-    }
-    rebuild(config) {
-        super.rebuild(this.getGridConfig());
-    }
-    build() {
-        // const bkg = Sprite.from('bkg.jpg');
-        // this.setChild('background', bkg);
-    }
-}
-
-;// CONCATENATED MODULE: ./src/configs/gridConfigs/ForegroundViewGC.ts
-
-const getForegroundGridConfig = () => {
-    return lp(getForegroundGridLandscapeConfig, getForegroundGridPortraitConfig).call(null);
-};
-const getForegroundGridLandscapeConfig = () => {
-    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
-    return {
-        name: 'foreground',
-        // debug: { color: 0xff5027 },
-        bounds,
-        cells: [
-            {
-                name: 'popup',
-                bounds: { x: 0.1, y: 0.1, width: 0.8, height: 0.7 },
-            },
-        ],
-    };
-};
-const getForegroundGridPortraitConfig = () => {
-    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
-    return {
-        name: 'foreground',
-        // debug: { color: 0xff5027 },
-        bounds,
-        cells: [
-            {
-                name: 'popup',
-                bounds: { x: 0.1, y: 0.1, width: 0.8, height: 0.7 },
-            },
-        ],
-    };
-};
-
-;// CONCATENATED MODULE: ./src/views/ForegroundView.ts
-
-
-class ForegroundView extends PixiGrid {
-    constructor() {
-        super();
-        this.build();
-    }
-    getGridConfig() {
-        return getForegroundGridConfig();
-    }
-    rebuild(config) {
-        super.rebuild(this.getGridConfig());
-    }
-    build() {
-        //
-    }
-}
-
-;// CONCATENATED MODULE: ./src/configs/gridConfigs/GameViewGC.ts
-
-const getGameViewGridConfig = () => {
-    return lp(getGameViewGridLandscapeConfig, getGameViewGridPortraitConfig).call(null);
-};
-const getGameViewGridLandscapeConfig = () => {
-    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
-    return {
-        name: 'game',
-        // debug: { color: 0xd9ff27 },
-        bounds,
-        cells: [
-            {
-                name: 'board',
-                bounds: { x: 0, y: 0, width: 1, height: 1 },
-            },
-        ],
-    };
-};
-const getGameViewGridPortraitConfig = () => {
-    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
-    return {
-        name: 'game',
-        // debug: { color: 0xd9ff27 },
-        bounds,
-        cells: [
-            {
-                name: 'board',
-                bounds: { x: 0, y: 0, width: 1, height: 1 },
+                name: 'bkg',
+                bounds: { x: 0, y: 0, width: 1, height: 0.8 },
             },
         ],
     };
@@ -49314,7 +49204,7 @@ const GAME_CONFIG = {
 };
 const getBodyConfig = (name) => {
     return {
-        restitution: 1.035,
+        restitution: 1.03,
         friction: 0,
         frictionAir: 0,
         label: name,
@@ -49322,28 +49212,13 @@ const getBodyConfig = (name) => {
 };
 const wallBodyConfig = {
     isStatic: true,
-    restitution: 1.035,
+    restitution: 1.03,
     friction: 0,
 };
 const winningCombos = {
     paper: { beats: 'rock', texture: 'paper.png' },
     rock: { beats: 'scissors', texture: 'rock.png' },
     scissors: { beats: 'paper', texture: 'scissors.png' },
-};
-
-;// CONCATENATED MODULE: ./src/events/MainEvents.ts
-const WindowEvent = {
-    Resize: 'WindowEventResize',
-    FocusChange: 'WindowEventFocusChange',
-};
-const MainGameEvents = {
-    Resize: 'MainGameEventsResize',
-    MainViewReady: 'MainGameEventsMainViewReady',
-    Collision: 'MainGameEventsCollision',
-};
-const UIViewEvents = {
-    StartButtonClick: 'UIViewEventsStartButtonClick',
-    RestartButtonClick: 'UIViewEventsRestartButtonClick',
 };
 
 ;// CONCATENATED MODULE: ./src/models/ObservableModel.ts
@@ -49525,6 +49400,149 @@ class GameModel extends ObservableModel {
     }
 }
 
+;// CONCATENATED MODULE: ./src/views/BackgroundView.ts
+
+
+
+
+
+
+
+class BackgroundView extends PixiGrid {
+    constructor() {
+        super();
+        dist_lego.event.on(GameModelEvents.StateUpdate, this.onGameStateUpdate, this);
+        this.build();
+    }
+    getGridConfig() {
+        return getBackgroundGridConfig();
+    }
+    rebuild(config) {
+        super.rebuild(this.getGridConfig());
+    }
+    build() {
+        this.bkg = Sprite.from('bkg.jpg');
+        this.setChild('bkg', this.bkg);
+    }
+    onGameStateUpdate(state) {
+        switch (state) {
+            case GameState.Intro:
+                show(this.bkg);
+                break;
+            case GameState.Game:
+                hide(this.bkg);
+                break;
+            case GameState.Result:
+                hide(this.bkg);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+;// CONCATENATED MODULE: ./src/configs/gridConfigs/ForegroundViewGC.ts
+
+const getForegroundGridConfig = () => {
+    return lp(getForegroundGridLandscapeConfig, getForegroundGridPortraitConfig).call(null);
+};
+const getForegroundGridLandscapeConfig = () => {
+    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
+    return {
+        name: 'foreground',
+        // debug: { color: 0xff5027 },
+        bounds,
+        cells: [
+            {
+                name: 'popup',
+                bounds: { x: 0.1, y: 0.1, width: 0.8, height: 0.7 },
+            },
+        ],
+    };
+};
+const getForegroundGridPortraitConfig = () => {
+    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
+    return {
+        name: 'foreground',
+        // debug: { color: 0xff5027 },
+        bounds,
+        cells: [
+            {
+                name: 'popup',
+                bounds: { x: 0.1, y: 0.1, width: 0.8, height: 0.7 },
+            },
+        ],
+    };
+};
+
+;// CONCATENATED MODULE: ./src/views/ForegroundView.ts
+
+
+class ForegroundView extends PixiGrid {
+    constructor() {
+        super();
+        this.build();
+    }
+    getGridConfig() {
+        return getForegroundGridConfig();
+    }
+    rebuild(config) {
+        super.rebuild(this.getGridConfig());
+    }
+    build() {
+        //
+    }
+}
+
+;// CONCATENATED MODULE: ./src/configs/gridConfigs/GameViewGC.ts
+
+const getGameViewGridConfig = () => {
+    return lp(getGameViewGridLandscapeConfig, getGameViewGridPortraitConfig).call(null);
+};
+const getGameViewGridLandscapeConfig = () => {
+    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
+    return {
+        name: 'game',
+        // debug: { color: 0xd9ff27 },
+        bounds,
+        cells: [
+            {
+                name: 'board',
+                bounds: { x: 0, y: 0, width: 1, height: 1 },
+            },
+        ],
+    };
+};
+const getGameViewGridPortraitConfig = () => {
+    const bounds = { x: 0, y: 0, width: document.body.clientWidth, height: document.body.clientHeight };
+    return {
+        name: 'game',
+        // debug: { color: 0xd9ff27 },
+        bounds,
+        cells: [
+            {
+                name: 'board',
+                bounds: { x: 0, y: 0, width: 1, height: 1 },
+            },
+        ],
+    };
+};
+
+;// CONCATENATED MODULE: ./src/events/MainEvents.ts
+const WindowEvent = {
+    Resize: 'WindowEventResize',
+    FocusChange: 'WindowEventFocusChange',
+};
+const MainGameEvents = {
+    Resize: 'MainGameEventsResize',
+    MainViewReady: 'MainGameEventsMainViewReady',
+    Collision: 'MainGameEventsCollision',
+};
+const UIViewEvents = {
+    StartButtonClick: 'UIViewEventsStartButtonClick',
+    RestartButtonClick: 'UIViewEventsRestartButtonClick',
+};
+
 ;// CONCATENATED MODULE: ./src/views/ItemView.ts
 
 class ItemView extends Container {
@@ -49564,11 +49582,14 @@ class BoardView extends Container {
         this.items = [];
         this.bodyToSprite = new Map();
         this.gameState = GameState.Unknown;
+        this.boundsGr = new Graphics_Graphics();
         dist_lego.event
             .on(ItemModelEvents.TypeUpdate, this.onItemTypeUpdate, this)
             .on(GameModelEvents.StateUpdate, this.onGameStateUpdate, this)
             .on(BoardModelEvents.ItemsUpdate, this.onItemsUpdate, this);
         this.build();
+        this.boundsGr = drawBounds(this, 0x5832a8);
+        hide(this.boundsGr, true);
     }
     getBounds() {
         return new Rectangle(0, 0, GAME_CONFIG.width, GAME_CONFIG.height);
@@ -49625,6 +49646,7 @@ class BoardView extends Container {
                     matter_default().Composite.remove(window.gamePhysicsWorld, body);
                 }
                 this.bodyToSprite.clear();
+                hide(this.boundsGr);
                 break;
             case GameState.Game:
                 let i = 0;
@@ -49637,8 +49659,10 @@ class BoardView extends Container {
                     });
                     i++;
                 }
+                show(this.boundsGr);
                 break;
             case GameState.Result:
+                hide(this.boundsGr);
                 break;
             default:
                 break;
@@ -50157,7 +50181,7 @@ var App_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 class App extends Application {
     constructor() {
         super({
-            backgroundColor: 0x000000,
+            backgroundColor: 0x121212,
             backgroundAlpha: 1,
             powerPreference: 'high-performance',
             antialias: true,
