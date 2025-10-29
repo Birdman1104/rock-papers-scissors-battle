@@ -1,4 +1,3 @@
-import { CellScale } from '@armathai/pixi-grid';
 import { lp } from '../../Utils';
 
 export const getBackgroundGridConfig = () => {
@@ -13,9 +12,8 @@ const getBackgroundGridLandscapeConfig = () => {
         bounds,
         cells: [
             {
-                name: 'background',
-                scale: CellScale.envelop,
-                bounds: { x: 0, y: 0, width: 1, height: 1 },
+                name: 'bkg',
+                bounds: { x: 0, y: 0, width: 1, height: 0.8 },
             },
         ],
     };
@@ -29,9 +27,8 @@ const getBackgroundGridPortraitConfig = () => {
         bounds,
         cells: [
             {
-                name: 'background',
-                scale: CellScale.envelop,
-                bounds: { x: 0, y: 0, width: 1, height: 1 },
+                name: 'bkg',
+                bounds: { x: 0, y: 0, width: 1, height: 0.8 },
             },
         ],
     };

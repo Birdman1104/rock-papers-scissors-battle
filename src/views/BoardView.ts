@@ -1,18 +1,20 @@
 import { lego } from '@armathai/lego';
 import Matter from 'matter-js';
-import { Container, IPointData, Rectangle, Texture } from 'pixi.js';
+import { Container, Graphics, IPointData, Rectangle, Texture } from 'pixi.js';
 import { GAME_CONFIG, getBodyConfig, wallBodyConfig, winningCombos } from '../configs/constants';
 import { MainGameEvents } from '../events/MainEvents';
 import { BoardModelEvents, GameModelEvents, ItemModelEvents } from '../events/ModelEvents';
 import { GameState } from '../models/GameModel';
 import { ItemModel, ItemType } from '../models/ItemModel';
-import { delayRunnable } from '../Utils';
+import { delayRunnable, drawBounds, hide, show } from '../Utils';
 import { ItemView } from './ItemView';
 
 export class BoardView extends Container {
     private items: ItemView[] = [];
     private bodyToSprite: Map<any, ItemView> = new Map();
     private gameState: GameState = GameState.Unknown;
+
+    private boundsGr = new Graphics();
 
     constructor() {
         super();
@@ -22,6 +24,9 @@ export class BoardView extends Container {
             .on(GameModelEvents.StateUpdate, this.onGameStateUpdate, this)
             .on(BoardModelEvents.ItemsUpdate, this.onItemsUpdate, this);
         this.build();
+
+        this.boundsGr = drawBounds(this, 0x5832a8);
+        hide(this.boundsGr, true);
     }
 
     public getBounds(): Rectangle {
@@ -88,7 +93,7 @@ export class BoardView extends Container {
                     Matter.Composite.remove(window.gamePhysicsWorld, body);
                 }
                 this.bodyToSprite.clear();
-
+                hide(this.boundsGr);
                 break;
             case GameState.Game:
                 let i = 0;
@@ -101,8 +106,10 @@ export class BoardView extends Container {
                     });
                     i++;
                 }
+                show(this.boundsGr);
                 break;
             case GameState.Result:
+                hide(this.boundsGr);
                 break;
 
             default:
